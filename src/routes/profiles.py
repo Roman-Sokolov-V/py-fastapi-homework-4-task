@@ -5,8 +5,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
 from config import get_jwt_auth_manager, get_s3_storage_client
-from exceptions import S3ConnectionError, S3FileUploadError, TokenExpiredError, \
+from exceptions import (
+    S3ConnectionError,
+    S3FileUploadError,
+    TokenExpiredError,
     InvalidTokenError
+)
 from schemas import ProfileRequestSchema, ProfileResponseSchema
 from database import (
     get_db,
@@ -40,18 +44,21 @@ async def create_profile(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authorization header is missing"
         )
-    auth_type, token = header.split()
-
+    splited_header = header.split()
+    if len(splited_header) != 2 or splited_header[0] != "Bearer":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Authorization header format. Expected 'Bearer <token>'"
+        )
+    token = splited_header[1]
     try:
         token_data = jwt_manager.decode_access_token(token)
     except TokenExpiredError:
-
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has expired."
         )
     except InvalidTokenError:
-
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Authorization header format. Expected 'Bearer <token>'"

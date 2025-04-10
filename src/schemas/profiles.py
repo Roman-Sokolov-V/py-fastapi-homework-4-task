@@ -1,10 +1,9 @@
 from datetime import date
 from typing import Annotated, Optional
 
-from fastapi import UploadFile, Form, File, HTTPException
-from pydantic import BaseModel, field_validator, HttpUrl, AfterValidator, Field, BeforeValidator
+from fastapi import UploadFile, File
+from pydantic import BaseModel, AfterValidator
 
-from database.models.accounts import GenderEnum
 from validation import (
     validate_name,
     validate_image,
